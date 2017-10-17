@@ -13,11 +13,33 @@ let readFileOptions = {
     encoding: "utf-8"
 };
 
-let render = function (path, view) {
+let defaultMustacheEscape = Mustache.escape;
+
+let render = function (path, view, options) {
     if (typeof path !== 'string') {
         throw new TypeError('Invalid path! Path should be a "string" ' +
                             'but "' + typeStr(path) + '" was given as the first ' +
                             'argument for mustache#render(path, view)');
+    }
+
+    if (typeof view !== 'object') {
+        throw new TypeError('Invalid view! View should be an "object" ' +
+                            'but "' + typeStr(view) + '" was given as the first ' +
+                            'argument for mustache#render(path, view, options)');
+    }
+
+    let isOptionsUndefined = (typeof options === 'undefined');
+
+    if (typeof options !== 'object' && !isOptionsUndefined) {
+        throw new TypeError('Invalid options! Options should be an "object" ' +
+                            'but "' + typeStr(options) + '" was given as the first ' +
+                            'argument for mustache#render(path, view, options)');
+    }
+
+    if (isOptionsUndefined) {
+        options = {
+            escape: true
+        };
     }
 
     path = path + '.mustache';
@@ -25,12 +47,22 @@ let render = function (path, view) {
     let content = fs.readFileSync(path, readFileOptions);
 
     if (content === null) {
-        throw new ReferenceError('Unable to get layout content!');
+        throw new Error('Unable to get layout content!');
     } else if (typeof content !== 'string') {
         throw new TypeError('Invalid content! Not string.');
     }
 
-    return Mustache.render(content, view);
+    if (options.escape === false) {
+        Mustache.escape = function (value) {
+            return value;
+        };
+    }
+
+    let result = Mustache.render(content, view);
+
+    Mustache.escape = defaultMustacheEscape;
+
+    return result;
 };
 
 module.exports = render;
