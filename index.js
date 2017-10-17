@@ -13,8 +13,6 @@ let readFileOptions = {
     encoding: "utf-8"
 };
 
-let defaultMustacheEscape = Mustache.escape;
-
 let render = function (path, view, options) {
     if (typeof path !== 'string') {
         throw new TypeError('Invalid path! Path should be a "string" ' +
@@ -58,11 +56,7 @@ let render = function (path, view, options) {
         };
     }
 
-    let result = Mustache.render(content, view);
-
-    Mustache.escape = defaultMustacheEscape;
-
-    return result;
+    return Mustache.render(content, view);
 };
 
 module.exports = render;
